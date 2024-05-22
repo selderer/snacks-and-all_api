@@ -3,6 +3,6 @@ import { postOrder } from "../controllers/order.js";
 
 const router  = express.Router();
 
-router.post("", postOrder)
+router.post("/", postOrder)
 
 export default router;

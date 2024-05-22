@@ -26,14 +26,19 @@ export const getFilteredProducts = (req, res) => {
     const category = req.query.category;
     const type = req.query.type;
     const limit = req.query.limit;
+    const name = req.query.search;
 
     let q = "SELECT * FROM products WHERE type = (?) OR category = (?)"
+
+    if (name) {
+        q += " OR name LIKE ?"
+    }
 
     if (limit) {
         q += " LIMIT ?"
     }
 
-    db.query(q, [type, category, Number(limit)], (err, data) => {
+    db.query(q, [type, category, Number(limit), name], (err, data) => {
         if (err) return res.status(500).json(err);
 
         return res.status(200).json(data);
