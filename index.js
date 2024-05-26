@@ -2,6 +2,7 @@ import Express from "express";
 const app = Express();
 import productsRoutes from "./routes/products.js";
 import ordersRoutes from "./routes/orders.js";
+import adminsRoutes from "./routes/admins.js";
 import multer from "multer";
 import cors from "cors";
 
@@ -10,6 +11,7 @@ app.use(Express.json())
 
 app.use("/api/products", productsRoutes);
 app.use("/api/orders", ordersRoutes);
+app.use("/api/admin", adminsRoutes);
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {

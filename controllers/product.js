@@ -23,27 +23,48 @@ export const getProductById = (req, res) => {
 }
 
 export const getFilteredProducts = (req, res) => {
-    const category = req.query.category;
-    const type = req.query.type;
-    const limit = req.query.limit;
-    const name = req.query.search;
+    const { category, type, limit, search: name, from, to } = req.query;
 
-    let q = "SELECT * FROM products WHERE type = (?) OR category = (?)"
+    let q = "SELECT * FROM products WHERE 1=1";
+    const values = [];
+
+    if (type) {
+        q += " AND type = ?";
+
+        values.push(type);
+    }
+
+    if (category) {
+        q += " AND category = ?";
+
+        values.push(category);
+    }
 
     if (name) {
-        q += " OR name LIKE ?"
+        q += " AND name LIKE ?";
+
+        values.push(`%${name}%`);
     }
 
     if (limit) {
-        q += " LIMIT ?"
+        q += " LIMIT ?";
+
+        values.push(Number(limit));
     }
 
-    db.query(q, [type, category, Number(limit), name], (err, data) => {
+    if (from && to) {
+        q += " AND price BETWEEN ? AND ?";
+
+        values.push(Number(from), Number(to));
+    }
+
+    db.query(q, values, (err, data) => {
         if (err) return res.status(500).json(err);
 
         return res.status(200).json(data);
-    })
-}
+    });
+};
+
 
 export const addProduct = (req, res) => {
     const q = "INSERT INTO products (`name`, `description`, `image`, `price`, `category`, `type`) VALUES (?)"
@@ -64,3 +85,34 @@ export const addProduct = (req, res) => {
     })
 }
 
+export const updateProduct = (req, res) => {
+    const q = "UPDATE products SET name = ?, description = ?, price = ?, category = ?, type = ?, image = ? WHERE id = ?";
+    const productId = req.params.productId;
+
+    const values = [
+        req.body.name,
+        req.body.description,
+        req.body.price,
+        req.body.category,
+        req.body.type,
+        req.body.image,
+        productId
+    ];
+
+    db.query(q, values, (err, data) => {
+        if (err) return res.status(500).json(err);
+
+        return res.status(200).json("Product updated");
+    });
+}
+
+export const deleteProduct = (req, res) => {
+    const q = "DELETE FROM products WHERE id = ?";
+    const productId = req.params.productId;
+
+    db.query(q, [productId], (err, data) => {
+        if (err) return res.status(500).json(err);
+
+        return res.status(200).json("Product deleted");
+    });
+}
